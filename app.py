@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
