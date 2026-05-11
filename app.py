@@ -15,6 +15,25 @@ st.markdown("""
     background-color: #0E1117;
 }
 
+.stChatMessage {
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.user-msg {
+    background-color: #1E293B;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.bot-msg {
+    background-color: #111827;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
 .title {
     text-align: center;
     font-size: 42px;
@@ -31,11 +50,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------- HEADER ----------------
-st.markdown(
-    '<div class="title">🤖 Data Science AI Assistant</div>',
-    unsafe_allow_html=True
-)
-
+st.markdown('<div class="title">🤖 Data Science AI Assistant</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="subtitle">Learn Data Science, AI, ML, Python and more with simple explanations</div>',
     unsafe_allow_html=True
@@ -45,8 +60,7 @@ st.markdown(
 st.sidebar.title("⚙ Settings")
 
 api_key = st.sidebar.text_input(
-    "Enter Gemini API Key",
-    type="password"
+    "AIzaSyBsktKu4oXs85fXF-wlNZq2C3NegI83cus",
 )
 
 st.sidebar.markdown("---")
@@ -69,29 +83,76 @@ st.sidebar.markdown("""
 
 # ---------------- KNOWLEDGE BASE ----------------
 kb = """
-Python is used in Data Science.
+# Data Science Knowledge Base
 
-NumPy is used for numerical computing.
+## Python
+Python is a beginner-friendly programming language widely used in Data Science.
 
-Pandas helps with data analysis.
+## NumPy
+NumPy is used for numerical computing and arrays.
 
-Machine Learning helps systems learn patterns.
+## Pandas
+Pandas helps with data analysis and data cleaning.
 
-Deep Learning uses neural networks.
+## Statistics
+Statistics helps understand data using mean, median, probability, etc.
+
+## Machine Learning
+Machine Learning allows systems to learn patterns from data.
+
+## Deep Learning
+Deep Learning uses neural networks with many layers.
+
+## NLP
+Natural Language Processing helps computers understand human language.
+
+## SQL
+SQL is used to manage and query databases.
+
+## APIs
+APIs allow applications to communicate with each other.
+
+## FastAPI
+FastAPI is used for building fast Python APIs.
 """
 
 # ---------------- SYSTEM PROMPT ----------------
 prompt = f"""
 You are an intelligent Data Science AI Assistant.
 
-Explain concepts in simple beginner-friendly English.
+Your job is to explain data science concepts in a simple, beginner-friendly way.
 
-Give:
-- Step-by-step explanations
-- Real-world examples
-- Python code examples
+Rules:
 
-Knowledge Base:
+* Explain step-by-step
+* Use easy English
+* Give real-world examples
+* Give Python examples when needed
+* Explain formulas clearly
+* Keep answers concise but understandable
+* If user asks coding questions, provide clean code
+* If user asks statistics or machine learning concepts, explain from basics
+* Act like a friendly teacher
+
+Topics you know:
+
+* Python
+* NumPy
+* Pandas
+* Statistics
+* Linear Algebra
+* Data Visualization
+* Machine Learning
+* Deep Learning
+* NLP
+* APIs
+* FastAPI
+* SQL
+* Data Cleaning
+* AI Chatbots
+
+Always help the user learn clearly and practically.
+
 {kb}
 """
 
@@ -109,7 +170,7 @@ user_input = st.chat_input("Ask any Data Science question...")
 
 if user_input:
 
-    # Store User Message
+    # Store user message
     st.session_state.messages.append({
         "role": "user",
         "content": user_input
@@ -118,39 +179,34 @@ if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Check API Key
     if not api_key:
-
-        st.error("Please enter Gemini API Key.")
-
+        st.error("Please enter your Gemini API Key in the sidebar.")
     else:
-
         try:
+            # Create Gemini Client
+            client = genai.Client(api_key=api_key)
 
-            # Configure Gemini
-            genai.configure(api_key=AIzaSyBsktKu4oXs85fXF-wlNZq2C3NegI83cus)
-
-            # Load Model
-            model = genai.GenerativeModel(
-                model_name="gemini-2.5-flash",
-                system_instruction=prompt
+            # Create Chat
+            chat = client.chats.create(
+                model="gemini-2.5-flash",
+                config={
+                    "system_instruction": prompt
+                }
             )
 
             # Generate Response
-            response = model.generate_content(user_input)
+            response = chat.send_message(user_input)
 
             bot_reply = response.text
 
-            # Store Bot Message
+            # Store bot message
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": bot_reply
             })
 
-            # Display Bot Message
             with st.chat_message("assistant"):
                 st.markdown(bot_reply)
 
         except Exception as e:
-
             st.error(f"Error: {e}")
